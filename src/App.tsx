@@ -1143,7 +1143,7 @@ export default function App() {
     showFlash('Datos guardados ✓');
   };
 
-  const myPreds = user ? participants[user]?.predictions || {} : {};
+const myPreds = user ? participants[user]?.predictions || {groups:{},positions:{},elim:{},specials:{}} : {groups:{},positions:{},elim:{},specials:{}};
   const leaderboard = Object.entries(participants)
     .map(([name, data]: any) => {
       const s = calcScore(data.predictions || {}, results, adminData);
