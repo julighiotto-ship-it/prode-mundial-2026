@@ -18,7 +18,7 @@ function fbListen(path: string, cb: (v: any) => void) {
 }
 
 const ADMIN_PASSWORD = "mundial2026admin";
-const EMPTY_PREDS = { groups:{} as any, positions:{} as any, elim:{} as any, specials:{} as any };
+const EMPTY_PREDS = { groups:{} as any, elim:{} as any, specials:{} as any };
 
 const GROUPS = [
   { id:"A", seed:"México",     teams:["México","Ecuador","Haití","Bosnia-Herz."] },
@@ -75,13 +75,7 @@ function calcScore(predictions: any, results: any, adminData: any) {
       if (!isNaN(pH)&&!isNaN(pA)&&pH===rH&&pA===rA) n2+=3;
     }
   }
-  for (const g of GROUPS) {
-    const pred=preds.positions?.[g.id];
-    const real=results?.positions?.[g.id];
-    if (!pred||!real) continue;
-    if (pred.first&&real.first&&pred.first===real.first&&pred.second&&real.second&&pred.second===real.second) n2+=4;
-    if (pred.third&&real.third&&pred.third===real.third) n2+=2;
-  }
+
   for (const [mid,pred] of Object.entries(preds.elim||{}) as any) {
     const real=results?.elim?.[mid];
     if (!real||real.home==null||real.home==="") continue;
@@ -229,35 +223,7 @@ function GroupSection({myPreds,results,onUpdate}:any) {
   );
 }
 
-function PositionsSection({myPreds,results,onUpdate}:any) {
-  const posPreds = myPreds?.positions || {};
-  const posResults = results?.positions || {};
-  return (
-    <div>
-      <div className="alert-warn"><strong>Nivel 2:</strong> 1° y 2° correcto = 4pts · 3° clasificado = 2pts extra</div>
-      <div className="grid-2">
-        {GROUPS.map(g=>(
-          <div key={g.id} className="card">
-            <div className="group-header" style={{marginBottom:".55rem"}}>
-              <div className="group-letter" style={{fontSize:"1.5rem"}}>{g.id}</div>
-              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:".95rem"}}>Grupo {g.id}</div>
-            </div>
-            {([["first","🥇"],["second","🥈"],["third","🎟️"]] as [string,string][]).map(([pos,emoji])=>(
-              <div key={pos} style={{marginBottom:".35rem",display:"grid",gridTemplateColumns:"1.5rem 1fr auto",alignItems:"center",gap:".4rem"}}>
-                <span style={{fontSize:".9rem",textAlign:"center"}}>{emoji}</span>
-                <select value={posPreds[g.id]?.[pos]||""} onChange={e=>onUpdate(g.id,pos,e.target.value)} style={{fontSize:".78rem",padding:".3rem .4rem"}}>
-                  <option value="">Elegir...</option>
-                  {g.teams.map(t=><option key={t} value={t}>{t}</option>)}
-                </select>
-                {posResults[g.id]?.[pos]&&<span className={`pts-badge ${posPreds[g.id]?.[pos]===posResults[g.id][pos]?"exact":"miss"}`}>{posPreds[g.id]?.[pos]===posResults[g.id][pos]?"✓":"✗"}</span>}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+
 
 function ElimSection({myPreds,results,onUpdate}:any) {
   const [phase,setPhase]=useState("r32");
@@ -289,7 +255,7 @@ function SpecialsSection({myPreds,adminData,onUpdate}:any) {
   const spPreds = myPreds?.specials || {};
   return (
     <div>
-      <div className="alert-warn"><strong>⚠️ Cierra el 11 de junio.</strong> No se aceptan cambios después del primer partido.</div>
+      <div className="alert-warn"><strong>⚠️ Cierra el 5 de julio</strong> (mitad del torneo). Completá antes de esa fecha.</div>
       {SPECIALS.map(sp=>{
         const realVal=adminData?.specials?.[sp.id];
         const myVal=spPreds[sp.id];
@@ -316,7 +282,7 @@ function SpecialsSection({myPreds,adminData,onUpdate}:any) {
 function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminData}:any) {
   const [pw,setPw]=useState("");
   const [isAdmin,setIsAdmin]=useState(false);
-  const [localR,setLocalR]=useState<any>({groups:{},positions:{},elim:{},specials:{}});
+  const [localR,setLocalR]=useState<any>({groups:{},elim:{},specials:{}});
   const [localA,setLocalA]=useState<any>({specials:{}});
   const [adminTab,setAdminTab]=useState("groups");
   const [activeG,setActiveG]=useState("A");
@@ -337,7 +303,7 @@ function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminDat
   const matches=GROUP_MATCHES.find(g=>g.groupId===activeG)?.matches||[];
   const gR=localR?.groups||{};
   const updG=(mid:string,f:string,v:string)=>setLocalR((p:any)=>({...p,groups:{...(p.groups||{}),[mid]:{...(p.groups?.[mid]||{}),[f]:v}}}));
-  const updPos=(gid:string,pos:string,v:string)=>setLocalR((p:any)=>({...p,positions:{...(p.positions||{}),[gid]:{...(p.positions?.[gid]||{}),[pos]:v}}}));
+
   const updElim=(mid:string,f:string,v:string)=>setLocalR((p:any)=>({...p,elim:{...(p.elim||{}),[mid]:{...(p.elim?.[mid]||{}),[f]:v}}}));
   const updSp=(id:string,v:string)=>setLocalA((p:any)=>({...p,specials:{...(p.specials||{}),[id]:v}}));
   return (
@@ -354,7 +320,7 @@ function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminDat
         </div>
       </div>
       <div className="inner-tabs">
-        {[["groups","⚽ Grupos"],["positions","📊 Posiciones"],["elim","🏆 Eliminatorias"],["specials","⭐ Especiales"]].map(([id,label])=>(
+        {[["groups","⚽ Grupos"],["elim","🏆 Eliminatorias"],["specials","⭐ Especiales"]].map(([id,label])=>(
           <button key={id} className={`inner-tab ${adminTab===id?"active":""}`} onClick={()=>setAdminTab(id)}>{label}</button>
         ))}
       </div>
@@ -366,25 +332,7 @@ function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminDat
         </div>
         <button className="btn btn-gold" style={{marginTop:".9rem"}} onClick={()=>{onSaveResults(localR);flash("Grupos guardados ✓");}}>💾 GUARDAR GRUPOS</button>
       </div>}
-      {adminTab==="positions"&&<div>
-        <div className="grid-2">
-          {GROUPS.map(g=>(
-            <div key={g.id} className="card">
-              <div style={{fontFamily:"'Bebas Neue',sans-serif",color:T.gold2,marginBottom:".45rem"}}>Grupo {g.id}</div>
-              {([["first","1°"],["second","2°"],["third","3° clasif."]] as [string,string][]).map(([pos,label])=>(
-                <div key={pos} style={{marginBottom:".35rem"}}>
-                  <div style={{fontSize:".7rem",fontWeight:700,color:T.gold,marginBottom:".2rem",textTransform:"uppercase"}}>{label}</div>
-                  <select value={localR?.positions?.[g.id]?.[pos]||""} onChange={e=>updPos(g.id,pos,e.target.value)} style={{fontSize:".8rem",padding:".3rem .4rem"}}>
-                    <option value="">Sin definir</option>
-                    {g.teams.map(t=><option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <button className="btn btn-gold" style={{marginTop:".9rem"}} onClick={()=>{onSaveResults(localR);flash("Posiciones guardadas ✓");}}>💾 GUARDAR POSICIONES</button>
-      </div>}
+
       {adminTab==="elim"&&<div>
         {ELIM_PHASES.map(ph=>(
           <div key={ph.id} className="card" style={{marginBottom:".9rem"}}>
@@ -432,7 +380,7 @@ export default function App() {
   const [predTab,setPredTab]=useState("groups");
   const [user,setUser]=useState<string|null>(null);
   const [participants,setParticipants]=useState<any>({});
-  const [results,setResults]=useState<any>({groups:{},positions:{},elim:{},specials:{}});
+  const [results,setResults]=useState<any>({groups:{},elim:{},specials:{}});
   const [adminData,setAdminData]=useState<any>({specials:{}});
   const [saving,setSaving]=useState(false);
   const [flash,setFlash]=useState("");
@@ -543,7 +491,7 @@ export default function App() {
             <div className="card" style={{marginBottom:"1rem"}}>
               <div className="section-title">Sistema de Puntaje</div>
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:".7rem"}}>
-                {[{n:"1",label:"Básico",color:T.green,max:"~70pts",items:["Ganador grupos · 1pt","Ganador elim. · 2pts"]},{n:"2",label:"Intermedio",color:"#6B9FD4",max:"~120pts",items:["Exacto grupos · 3pts","Exacto elim. · 5pts","1°+2° grupo · 4pts","3° · 2pts"]},{n:"3",label:"Experto",color:T.gold,max:"~45pts",items:["Campeón · 15pts","Subcampeón · 10pts","Goleador · 8pts","Arquero · 6pts","MVP · 6pts"]}].map(lv=>(
+                {[{n:"1",label:"Básico",color:T.green,max:"~70pts",items:["Ganador grupos · 1pt","Ganador elim. · 2pts"]},{n:"2",label:"Intermedio",color:"#6B9FD4",max:"~80pts",items:["Exacto grupos · 3pts","Exacto elim. · 5pts"]},{n:"3",label:"Experto",color:T.gold,max:"~45pts",items:["Campeón · 15pts","Subcampeón · 10pts","Goleador · 8pts","Arquero · 6pts","MVP · 6pts"]}].map(lv=>(
                   <div key={lv.n} style={{padding:".7rem",borderRadius:10,border:`1.5px solid ${lv.color}44`,background:`${lv.color}12`}}>
                     <div style={{fontFamily:"'Bebas Neue',sans-serif",color:lv.color,fontSize:".95rem",letterSpacing:1}}>N{lv.n} — {lv.label}</div>
                     <div style={{fontFamily:"'Bebas Neue',sans-serif",color:T.gray,fontSize:".72rem",marginBottom:".35rem"}}>MÁX {lv.max}</div>
@@ -562,12 +510,12 @@ export default function App() {
               {saving&&<div className="saving">Guardando...</div>}
             </div>
             <div className="inner-tabs" style={{marginBottom:"1rem"}}>
-              {([["groups","⚽ Grupos"],["positions","📊 Posiciones"],["elim","🏆 Eliminatorias"],["specials","⭐ N3"]] as [string,string][]).map(([id,label])=>(
+              {([["groups","⚽ Grupos"],["elim","🏆 Eliminatorias"],["specials","⭐ N3"]] as [string,string][]).map(([id,label])=>(
                 <button key={id} className={`inner-tab ${predTab===id?"active":""}`} onClick={()=>setPredTab(id)}>{label}</button>
               ))}
             </div>
             {predTab==="groups"&&<GroupSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["groups",mid,f],v)}/>}
-            {predTab==="positions"&&<PositionsSection myPreds={myPreds} results={results} onUpdate={(gid:string,pos:string,v:string)=>updatePrediction(["positions",gid,pos],v)}/>}
+
             {predTab==="elim"&&<ElimSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["elim",mid,f],v)}/>}
             {predTab==="specials"&&<SpecialsSection myPreds={myPreds} adminData={adminData} onUpdate={(id:string,v:string)=>updatePrediction(["specials",id],v)}/>}
           </div>
