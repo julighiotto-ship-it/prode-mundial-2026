@@ -304,7 +304,16 @@ function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminDat
   const gR=localR?.groups||{};
   const updG=(mid:string,f:string,v:string)=>setLocalR((p:any)=>({...p,groups:{...(p.groups||{}),[mid]:{...(p.groups?.[mid]||{}),[f]:v}}}));
 
-  const updElim=(mid:string,f:string,v:string)=>setLocalR((p:any)=>({...p,elim:{...(p.elim||{}),[mid]:{...(p.elim?.[mid]||{}),[f]:v}}}));
+  const updElim=(mid:string,f:string,v:string)=>{
+    setLocalR((p:any)=>{
+      const next={...p,elim:{...(p.elim||{}),[mid]:{...(p.elim?.[mid]||{}),[f]:v}}};
+      // Auto-save team names immediately so players see them
+      if(f==="homeTeam"||f==="awayTeam"){
+        setTimeout(()=>onSaveResults(next),300);
+      }
+      return next;
+    });
+  };
   const updSp=(id:string,v:string)=>setLocalA((p:any)=>({...p,specials:{...(p.specials||{}),[id]:v}}));
   return (
     <div>
