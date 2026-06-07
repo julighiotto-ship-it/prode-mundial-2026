@@ -52,6 +52,27 @@ const ELIM_PHASES = [
   { id:"r2",  label:"Final + 3° Puesto", slots:2  },
 ];
 
+// Cruces reales del Mundial 2026 (16avos de final, según FIFA)
+// Los 8 terceros clasificados (*) se definen al terminar la fase de grupos
+const ELIM_R32_FIXTURES = [
+  { id:"r32_m1",  home:"2° Grupo A",  away:"2° Grupo B" },
+  { id:"r32_m2",  home:"1° Grupo C",  away:"2° Grupo D" },
+  { id:"r32_m3",  home:"1° Grupo E",  away:"3° Grupo A/B/C/D/F*" },
+  { id:"r32_m4",  home:"1° Grupo F",  away:"2° Grupo C" },
+  { id:"r32_m5",  home:"1° Grupo E",  away:"2° Grupo F" },
+  { id:"r32_m6",  home:"1° Grupo I",  away:"3° Grupo C/D/F/G/H*" },
+  { id:"r32_m7",  home:"1° Grupo A",  away:"3° Grupo C/E/F/H/I*" },
+  { id:"r32_m8",  home:"1° Grupo L",  away:"3° Grupo E/H/I/J/K*" },
+  { id:"r32_m9",  home:"1° Grupo D",  away:"3° Grupo B/E/F/I/J*" },
+  { id:"r32_m10", home:"1° Grupo G",  away:"3° Grupo A/E/H/I/J*" },
+  { id:"r32_m11", home:"2° Grupo K",  away:"2° Grupo L" },
+  { id:"r32_m12", home:"1° Grupo H",  away:"2° Grupo J" },
+  { id:"r32_m13", home:"1° Grupo B",  away:"3° Grupo E/F/G/I/J*" },
+  { id:"r32_m14", home:"1° Grupo J",  away:"2° Grupo H" },
+  { id:"r32_m15", home:"1° Grupo K",  away:"3° Grupo D/E/I/J/L*" },
+  { id:"r32_m16", home:"2° Grupo D",  away:"2° Grupo G" },
+];
+
 const SPECIALS = [
   { id:"champion", label:"🥇 Campeón del Mundo",            pts:15 },
   { id:"runner",   label:"🥈 Subcampeón",                    pts:10 },
@@ -238,13 +259,23 @@ function ElimSection({myPreds,results,onUpdate}:any) {
           <div><div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.05rem",letterSpacing:1}}>{ph.label}</div><div style={{color:T.gray,fontSize:".73rem"}}>Ganador: 2pts · Exacto: 5pts</div></div>
           <div className="chip">{ph.slots/2} partidos</div>
         </div>
+        {phase==="r32" && <div style={{fontSize:".72rem",color:T.gray,marginBottom:".5rem",padding:"0 .3rem"}}>* Los terceros con asterisco se definen al terminar la fase de grupos según tabla de terceros FIFA</div>}
         {Array.from({length:ph.slots/2},(_,i)=>`${phase}_m${i+1}`).map((mid,i)=>{
-          const home=elimResults[mid]?.homeTeam||`Equipo ${i*2+1}`;
-          const away=elimResults[mid]?.awayTeam||`Equipo ${i*2+2}`;
-          return <MatchRow key={mid} match={{home,away}}
-            predHome={elimPreds[mid]?.home} predAway={elimPreds[mid]?.away} predWinner={elimPreds[mid]?.winner}
-            realHome={elimResults[mid]?.home} realAway={elimResults[mid]?.away}
-            onPredChange={(f:string,v:string)=>onUpdate(mid,f,v)}/>;
+          // For r32 use official FIFA fixture names as default
+          const fixture = phase==="r32" ? ELIM_R32_FIXTURES[i] : null;
+          const defaultHome = fixture ? fixture.home : `Equipo ${i*2+1}`;
+          const defaultAway = fixture ? fixture.away : `Equipo ${i*2+2}`;
+          const home=elimResults[mid]?.homeTeam||defaultHome;
+          const away=elimResults[mid]?.awayTeam||defaultAway;
+          return (
+            <div key={mid}>
+              {fixture && <div style={{fontSize:".68rem",color:T.gold,fontWeight:700,padding:".2rem .7rem 0",letterSpacing:".5px"}}>PARTIDO {i+1}</div>}
+              <MatchRow match={{home,away}}
+                predHome={elimPreds[mid]?.home} predAway={elimPreds[mid]?.away} predWinner={elimPreds[mid]?.winner}
+                realHome={elimResults[mid]?.home} realAway={elimResults[mid]?.away}
+                onPredChange={(f:string,v:string)=>onUpdate(mid,f,v)}/>
+            </div>
+          );
         })}
       </div>
     </div>
@@ -346,20 +377,27 @@ function AdminPanel({results,adminData,participants,onSaveResults,onSaveAdminDat
         {ELIM_PHASES.map(ph=>(
           <div key={ph.id} className="card" style={{marginBottom:".9rem"}}>
             <div style={{fontFamily:"'Bebas Neue',sans-serif",color:T.gold2,marginBottom:".7rem"}}>{ph.label}</div>
-            {Array.from({length:ph.slots/2},(_,i)=>`${ph.id}_m${i+1}`).map((mid,i)=>(
+            {Array.from({length:ph.slots/2},(_,i)=>`${ph.id}_m${i+1}`).map((mid,i)=>{
+              const fixture = ph.id==="r32" ? ELIM_R32_FIXTURES[i] : null;
+              const phHome = fixture ? fixture.home : `Equipo ${i*2+1}`;
+              const phAway = fixture ? fixture.away : `Equipo ${i*2+2}`;
+              return (
               <div key={mid} style={{marginBottom:".5rem"}}>
-                <div style={{fontSize:".7rem",color:T.gray,marginBottom:".2rem"}}>Partido {i+1}</div>
+                <div style={{fontSize:".7rem",color:T.gold,marginBottom:".2rem",fontWeight:700}}>
+                  Partido {i+1}{fixture?` — ${phHome} vs ${phAway}`:""}
+                </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr auto",gap:".35rem",alignItems:"center"}}>
-                  <input placeholder="Equipo A" value={localR?.elim?.[mid]?.homeTeam||""} onChange={e=>updElim(mid,"homeTeam",e.target.value)} style={{fontSize:".78rem"}}/>
+                  <input placeholder={phHome} value={localR?.elim?.[mid]?.homeTeam||""} onChange={e=>updElim(mid,"homeTeam",e.target.value)} style={{fontSize:".78rem"}}/>
                   <span style={{color:T.gray,fontSize:".78rem"}}>vs</span>
-                  <input placeholder="Equipo B" value={localR?.elim?.[mid]?.awayTeam||""} onChange={e=>updElim(mid,"awayTeam",e.target.value)} style={{fontSize:".78rem"}}/>
+                  <input placeholder={phAway} value={localR?.elim?.[mid]?.awayTeam||""} onChange={e=>updElim(mid,"awayTeam",e.target.value)} style={{fontSize:".78rem"}}/>
                   <div style={{display:"flex",gap:3}}>
                     <input className="input-score" placeholder="G" value={localR?.elim?.[mid]?.home||""} onChange={e=>updElim(mid,"home",e.target.value)} style={{width:44}}/>
                     <input className="input-score" placeholder="G" value={localR?.elim?.[mid]?.away||""} onChange={e=>updElim(mid,"away",e.target.value)} style={{width:44}}/>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         ))}
         <button className="btn btn-gold" onClick={()=>{onSaveResults(localR);flash("Eliminatorias guardadas ✓");}}>💾 GUARDAR ELIMINATORIAS</button>
