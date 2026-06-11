@@ -966,15 +966,13 @@ export default function App() {
             {predTab==="groups"&&<GroupSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["groups",mid,f],v)}/>}
             {predTab==="elim"&&<ElimSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["elim",mid,f],v)}/>}
             {predTab==="specials"&&<SpecialsSection myPreds={myPreds} adminData={adminData} onUpdate={(id:string,v:string)=>updatePrediction(["specials",id],v)}/>}
-
-
-
-
-                {tab==="leaderboard"&&(
+          </div>
+        )}
+        {tab==="leaderboard"&&(
           <div>
             <h2 className="section-title">🏆 Tabla de Posiciones</h2>
             <div className="card" style={{marginBottom:"1rem"}}>
-              <div style={{display:"grid",gridTemplateColumns:"2.2rem 1fr 3rem 3rem 3rem 3.5rem",gap:".4rem",padding:".35rem .9rem",borderBottom:"1px solid rgba(200,151,58,.2)",marginBottom:".55rem"}}>
+              <div style={{display:"grid",gridTemplateColumns:"2.2rem 1fr 3rem 3rem 3rem 3.5rem",gap:".4rem",padding:".35rem .9rem",borderBottom:"1px solid rgba(106,171,207,.15)",marginBottom:".55rem"}}>
                 {["#","Nombre","N1","N2","N3","Total"].map(h=><div key={h} style={{fontSize:".68rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"1px",color:"rgba(232,244,248,0.4)",textAlign:"center"}}>{h}</div>)}
               </div>
               {leaderboard.length===0&&<div style={{textAlign:"center",color:"rgba(232,244,248,0.4)",padding:"2rem"}}>Aún no hay puntos.</div>}
