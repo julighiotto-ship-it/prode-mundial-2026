@@ -974,6 +974,13 @@ export default function App() {
             {predTab==="groups"&&<GroupSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["groups",mid,f],v)}/>}
             {predTab==="elim"&&<ElimSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["elim",mid,f],v)}/>}
             {predTab==="specials"&&<SpecialsSection myPreds={myPreds} adminData={adminData} onUpdate={(id:string,v:string)=>updatePrediction(["specials",id],v)}/>}
+            <div style={{marginTop:"1.2rem",display:"flex",alignItems:"center",gap:"1rem"}}>
+              <button className="btn btn-gold" style={{flex:1,padding:".8rem",fontSize:".85rem"}}
+                disabled={saving}
+                onClick={async()=>{setSaving(true);await fbSet("participants",participants);setSaving(false);showFlash("✓ Predicciones guardadas correctamente");}}>
+                {saving?"Guardando...":"💾 GUARDAR MIS PREDICCIONES"}
+              </button>
+            </div>
 
             <div style={{marginTop:"1.2rem",display:"flex",alignItems:"center",gap:"1rem"}}>
               <button className="btn btn-gold" style={{flex:1,padding:".8rem",fontSize:".85rem",letterSpacing:"1px"}}
@@ -1011,8 +1018,7 @@ export default function App() {
                 </div>
               ))}
             </div>
-            <div style={{textAlign:"center",fontSize:".73rem",color:'rgba(232,244,248,0.4)'}}
->Máximo posible: ~235 pts · Se actualiza en tiempo real</div>
+            <div style={{textAlign:"center",fontSize:".73rem",color:'rgba(232,244,248,0.4)'}}>Máximo posible: ~235 pts · Se actualiza en tiempo real</div>
           </div>
         )}
         {tab==="admin"&&<AdminPanel results={results} adminData={adminData} participants={participants} onSaveResults={saveResults} onSaveAdminData={saveAdminData}/>}
