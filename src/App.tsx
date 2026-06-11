@@ -482,8 +482,16 @@ function MatchRow({match,predHome,predAway,predWinner,realHome,realAway,onPredCh
             </div>
           ):(
             <>
-              <input className="input-score" type="text" value={predHome??""} placeholder="G" onChange={e=>onPredChange("home",e.target.value)} style={{width:38,fontSize:".78rem"}}/>
-              <input className="input-score" type="text" value={predAway??""} placeholder="G" onChange={e=>onPredChange("away",e.target.value)} style={{width:38,fontSize:".78rem"}}/>
+              <input className="input-score" type="text" value={predHome??""} placeholder="G" onChange={e=>{
+                const h=e.target.value; onPredChange("home",h);
+                const hN=parseInt(h), aN=parseInt(predAway||"");
+                if(!isNaN(hN)&&!isNaN(aN)){onPredChange("winner",hN>aN?"home":aN>hN?"away":"draw");}
+              }} style={{width:38,fontSize:".78rem"}}/>
+              <input className="input-score" type="text" value={predAway??""} placeholder="G" onChange={e=>{
+                const a=e.target.value; onPredChange("away",a);
+                const hN=parseInt(predHome||""), aN=parseInt(a);
+                if(!isNaN(hN)&&!isNaN(aN)){onPredChange("winner",hN>aN?"home":aN>hN?"away":"draw");}
+              }} style={{width:38,fontSize:".78rem"}}/>
               <select value={predWinner||""} onChange={e=>onPredChange("winner",e.target.value)} style={{width:86,fontSize:".73rem",padding:".28rem .35rem"}}>
                 <option value="">Ganador</option>
                 <option value="home">{match.home.split(" ").pop()}</option>
