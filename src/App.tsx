@@ -835,6 +835,7 @@ export default function App() {
   const [results,setResults]=useState<any>({groups:{},elim:{},specials:{}});
   const [adminData,setAdminData]=useState<any>({specials:{}});
   const [saving,setSaving]=useState(false);
+  const [savedOk,setSavedOk]=useState(false);
   const [flash,setFlash]=useState("");
   const saveTimer=useRef<any>(null);
 
@@ -849,7 +850,14 @@ export default function App() {
 
   const savePred=useCallback((next:any)=>{
     if(saveTimer.current)clearTimeout(saveTimer.current);
-    saveTimer.current=setTimeout(async()=>{setSaving(true);await fbSet("participants",next);setSaving(false);},600);
+    setSavedOk(false);
+    saveTimer.current=setTimeout(async()=>{
+      setSaving(true);
+      await fbSet("participants",next);
+      setSaving(false);
+      setSavedOk(true);
+      setTimeout(()=>setSavedOk(false), 3000);
+    },600);
   },[]);
 
   const updatePrediction=(path:string[],value:string)=>{
@@ -953,7 +961,10 @@ export default function App() {
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:".9rem"}}>
               <h2 className="section-title" style={{marginBottom:0}}>Mis Predicciones</h2>
-              {saving&&<div className="saving">Guardando...</div>}
+              <div style={{display:"flex",alignItems:"center",gap:".5rem"}}>
+                {saving&&<div className="saving">Guardando...</div>}
+                {!saving&&savedOk&&<div style={{fontSize:".75rem",color:"#6DC26D",fontWeight:700}}>✓ Guardado</div>}
+              </div>
             </div>
             <div className="inner-tabs" style={{marginBottom:"1rem"}}>
               {([["groups","⚽ Grupos"],["elim","🏆 Eliminatorias"],["specials","⭐ N3"]] as [string,string][]).map(([id,label])=>(
@@ -961,12 +972,27 @@ export default function App() {
               ))}
             </div>
             {predTab==="groups"&&<GroupSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["groups",mid,f],v)}/>}
-
             {predTab==="elim"&&<ElimSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["elim",mid,f],v)}/>}
             {predTab==="specials"&&<SpecialsSection myPreds={myPreds} adminData={adminData} onUpdate={(id:string,v:string)=>updatePrediction(["specials",id],v)}/>}
-          </div>
-        )}
-        {tab==="leaderboard"&&(
+
+            <div style={{marginTop:"1.2rem",display:"flex",alignItems:"center",gap:"1rem"}}>
+              <button className="btn btn-gold" style={{flex:1,padding:".8rem",fontSize:".85rem",letterSpacing:"1px"}}
+                onClick={async()=>{
+                  setSaving(true);
+                  await fbSet("participants", participants);
+                  setSaving(false);
+                  setSavedOk(true);
+                  setTimeout(()=>setSavedOk(false),3500);
+                  showFlash("✓ Predicciones guardadas correctamente");
+                }}
+                disabled={saving}
+              >
+                {saving?"Guardando...":"💾 GUARDAR MIS PREDICCIONES"}
+              </button>
+              {savedOk&&!saving&&<div style={{fontSize:".82rem",color:"#6DC26D",fontWeight:700,whiteSpace:"nowrap"}}>✓ Todo guardado</div>}
+            </div>
+
+                {tab==="leaderboard"&&(
           <div>
             <h2 className="section-title">🏆 Tabla de Posiciones</h2>
             <div className="card" style={{marginBottom:"1rem"}}>
