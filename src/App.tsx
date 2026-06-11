@@ -903,8 +903,7 @@ export default function App() {
             <button key={id} className={`nav-tab ${tab===id?"active":""}`} onClick={()=>setTab(id)}>{label}</button>
           ))}
         </div>
-        <div style={{fontSize:".75rem",color:'rgba(232,244,248,0.4)'}}
->
+        <div style={{fontSize:".75rem",color:'rgba(232,244,248,0.4)'}}>
           <span style={{color:'#6AABCF',fontWeight:700}}>{user}</span> &nbsp;
           <button style={{background:"none",border:"none",color:'rgba(232,244,248,0.4)',cursor:"pointer",fontSize:".72rem"}} onClick={()=>setUser(null)}>↩</button>
         </div>
@@ -982,22 +981,7 @@ export default function App() {
               </button>
             </div>
 
-            <div style={{marginTop:"1.2rem",display:"flex",alignItems:"center",gap:"1rem"}}>
-              <button className="btn btn-gold" style={{flex:1,padding:".8rem",fontSize:".85rem",letterSpacing:"1px"}}
-                onClick={async()=>{
-                  setSaving(true);
-                  await fbSet("participants", participants);
-                  setSaving(false);
-                  setSavedOk(true);
-                  setTimeout(()=>setSavedOk(false),3500);
-                  showFlash("✓ Predicciones guardadas correctamente");
-                }}
-                disabled={saving}
-              >
-                {saving?"Guardando...":"💾 GUARDAR MIS PREDICCIONES"}
-              </button>
-              {savedOk&&!saving&&<div style={{fontSize:".82rem",color:"#6DC26D",fontWeight:700,whiteSpace:"nowrap"}}>✓ Todo guardado</div>}
-            </div>
+
 
                 {tab==="leaderboard"&&(
           <div>
