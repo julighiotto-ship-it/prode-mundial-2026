@@ -853,6 +853,28 @@ export default function App() {
     return()=>{u1();u2();u3();};
   },[]);
 
+  // Save immediately when user leaves/minimizes app
+  useEffect(()=>{
+    const handleVisibility=()=>{
+      if(document.visibilityState==="hidden"&&saveTimer.current){
+        clearTimeout(saveTimer.current);
+        fbSet("participants",participants);
+      }
+    };
+    const handleBeforeUnload=()=>{
+      if(saveTimer.current){
+        clearTimeout(saveTimer.current);
+        fbSet("participants",participants);
+      }
+    };
+    document.addEventListener("visibilitychange",handleVisibility);
+    window.addEventListener("beforeunload",handleBeforeUnload);
+    return()=>{
+      document.removeEventListener("visibilitychange",handleVisibility);
+      window.removeEventListener("beforeunload",handleBeforeUnload);
+    };
+  },[participants]);
+
   const showFlash=(msg:string)=>{setFlash(msg);setTimeout(()=>setFlash(""),2200);};
 
   const savePred=useCallback((next:any)=>{
@@ -904,7 +926,10 @@ export default function App() {
         <div className="nav-logo">⚽ <span>MUNDIAL</span> 26</div>
         <div className="nav-tabs">
           {([["home","🏠"],["predictions","✏️ Predecir"],["leaderboard","🏆 Tabla"],["admin","⚙️"]] as [string,string][]).map(([id,label])=>(
-            <button key={id} className={`nav-tab ${tab===id?"active":""}`} onClick={()=>setTab(id)}>{label}</button>
+            <button key={id} className={`nav-tab ${tab===id?"active":""}`} onClick={()=>{
+              if(saveTimer.current){clearTimeout(saveTimer.current);fbSet("participants",participants);}
+              setTab(id);
+            }}>{label}</button>
           ))}
         </div>
         <div style={{fontSize:".75rem",color:'rgba(232,244,248,0.4)'}}>
@@ -968,7 +993,10 @@ export default function App() {
             </div>
             <div className="inner-tabs" style={{marginBottom:"1rem"}}>
               {([["groups","⚽ Grupos"],["elim","🏆 Eliminatorias"],["specials","⭐ N3"]] as [string,string][]).map(([id,label])=>(
-                <button key={id} className={`inner-tab ${predTab===id?"active":""}`} onClick={()=>setPredTab(id)}>{label}</button>
+                <button key={id} className={`inner-tab ${predTab===id?"active":""}`} onClick={()=>{
+                  if(saveTimer.current){clearTimeout(saveTimer.current);fbSet("participants",participants);}
+                  setPredTab(id);
+                }}>{label}</button>
               ))}
             </div>
             {predTab==="groups"&&<GroupSection myPreds={myPreds} results={results} onUpdate={(mid:string,f:string,v:string)=>updatePrediction(["groups",mid,f],v)}/>}
